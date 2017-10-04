@@ -30,6 +30,10 @@ public class ExitParkingLotPane {
 	public void setExitPane(GridPane exitPane) {
 		this.exitPane = exitPane;
 	}
+	public void clear() {
+		licensePlateField.clear();
+		licensePlateField.setText("Enter Licesnse Plate");
+	}
 
 	public TextField getLicensePlateField() {
 		return licensePlateField;

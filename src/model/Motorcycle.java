@@ -1,13 +1,13 @@
 package model;
 
-public class Motercycle extends Vehicle {
+public class Motorcycle extends Vehicle {
 	private final String size = "Small";
 	
 	public String getSize() {
 		return size;
 	}
 
-	public Motercycle(String license, String color) {
+	public Motorcycle(String license, String color) {
 		super(license, color);
 	}
 	
