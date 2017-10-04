@@ -13,4 +13,9 @@ public class Car extends Vehicle {
 		return size;
 	}
 
+	@Override
+	public String toString() {
+		return "Car [size=" + size + "]";
+	}
+
 }
