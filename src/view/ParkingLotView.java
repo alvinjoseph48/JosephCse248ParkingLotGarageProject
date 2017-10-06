@@ -1,5 +1,6 @@
 package view;
 
+import java.util.EmptyStackException;
 import java.util.Hashtable;
 import java.util.Stack;
 
@@ -9,10 +10,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import model.Car;
-import model.HashTable;
 import model.Motorcycle;
 import model.ParkingSpot;
-import model.Ticket;
 import model.Truck;
 import model.Vehicle;
 
@@ -20,7 +19,7 @@ public class ParkingLotView extends Application {
 	private Stack<ParkingSpot> carStack;
 	private Stack<ParkingSpot> motorCycleStack;
 	private Stack<ParkingSpot> truckStack;
-	// private HashTable h1;
+
 	private TicketPane ticketPane;
 	private ExitParkingLotPane exitParkingLotPane;
 	private ParkingSpot popedCar;
@@ -35,7 +34,6 @@ public class ParkingLotView extends Application {
 		Pane parkingPane = new Pane();
 		exitParkingLotPane = new ExitParkingLotPane();
 		ticketPane = new TicketPane();
-		// h1 = new HashTable(18);
 		hashTable = new Hashtable<String, Vehicle>();
 
 		carStack = new Stack<ParkingSpot>();
@@ -64,8 +62,8 @@ public class ParkingLotView extends Application {
 		ParkingSpot motorCycleSpot;
 		for (int i = 0; i < 10; i++) {
 			motorCycleSpot = new ParkingSpot(i);
-			truckSpots[i] = motorCycleSpot;
-			truckStack.push(motorCycleSpots[i]);
+			motorCycleSpots[i] = motorCycleSpot;
+			motorCycleStack.push(motorCycleSpots[i]);
 		}
 
 		parkingPane.getMenuBar().prefWidthProperty().bind(primaryStage.widthProperty());
@@ -85,16 +83,29 @@ public class ParkingLotView extends Application {
 		ticketPane.getBuyTicketBtn().setOnAction(e -> {
 			// check if stack has spaces open to pop
 			if (ticketPane.getSizeList().getSelectionModel().getSelectedIndex() == 0) {
-				// parkTruck();
-			}
-			if (ticketPane.getSizeList().getSelectionModel().getSelectedIndex() == 1) {
-				if (parkCar() != null) {
+				if (parkMotorCycle() != null) {
 					Vehicle c1 = hashTable.get(ticketPane.getLicensePlateField().getText());
 					alertParked();
 					System.out.println(c1.toString() + " " + c1.getLicense());
 					System.out.println("parked car");
 					// alert car is parked
 				} else {
+					alertFull();
+				}
+
+			}
+			if (ticketPane.getSizeList().getSelectionModel().getSelectedIndex() == 1) {
+				try {
+					if (parkCar() != null) {
+						Vehicle c1 = hashTable.get(ticketPane.getLicensePlateField().getText());
+						alertParked();
+						System.out.println(c1.toString() + " " + c1.getLicense());
+						System.out.println("parked car");
+						// alert car is parked
+					} else {
+						alertFull();
+					}
+				} catch (EmptyStackException e1) {
 					alertFull();
 				}
 			}
@@ -114,15 +125,33 @@ public class ParkingLotView extends Application {
 
 		});
 		exitParkingLotPane.getConfirmBtn().setOnAction(e -> {
-			// check if in hashTable
-			removeCar();
-			// push to stack
+
+			if (removeVehicle() != null) {
+				alertRemoved();
+			} else {
+				alertNotFound();
+			}
+
 		});
 
 		Scene myScene = new Scene(parkingPane.getBorderPane(), 500, 500);
 		primaryStage.setScene(myScene);
 		primaryStage.show();
 
+	}
+
+	private void alertNotFound() {
+		Alert alert = new Alert(AlertType.ERROR);
+		alert.setHeaderText("Car Was Never Parked!");
+		alert.setContentText("Sorry please try again");
+		alert.showAndWait();
+	}
+
+	private void alertRemoved() {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setHeaderText("Leaving Parking Lot \nThank You Come Again!");
+		alert.setContentText("License Plate:" + exitParkingLotPane.getLicensePlateField().getText());
+		alert.showAndWait();
 	}
 
 	private void alertFull() {
@@ -176,10 +205,16 @@ public class ParkingLotView extends Application {
 		return 0;
 	}
 
-	private Car removeCar() {
-		Car c1 = (Car) hashTable.get(ticketPane.getLicensePlateField().getText());
-		if (c1 != null) {
+	private Vehicle removeVehicle() {
+		Vehicle c1 = hashTable.get(ticketPane.getLicensePlateField().getText());
+		if (c1 instanceof Car) {
 			carStack.push(popedCar);
+			return c1;
+		} else if (c1 instanceof Motorcycle) {
+			motorCycleStack.push(popedCar); // change
+			return c1;
+		} else if (c1 instanceof Truck) {
+			truckStack.push(popedCar);
 			return c1;
 		}
 		return null;
@@ -200,9 +235,29 @@ public class ParkingLotView extends Application {
 			return null;
 	}
 
-	private ParkingSpot parkTruck() {
-		ParkingSpot p1 = truckStack.pop();
+	private ParkingSpot parkMotorCycle() {
+		if (!motorCycleStack.empty()) {
+			ParkingSpot p1 = motorCycleStack.pop();
+			hashTable.put(createMotorCycle().getLicense(), createMotorCycle());
+			return p1;
+		}
+		ParkingSpot p1 = carStack.pop();
 		if (p1 != null) {
+			hashTable.put(createCar().getLicense(), createCar());
+			return p1;
+		}
+		popedCar = truckStack.pop();
+		if (popedCar != null) {
+			hashTable.put(createCar().getLicense(), createCar());
+			return popedCar;
+		} else
+
+			return null;
+	}
+
+	private ParkingSpot parkTruck() {
+		if (!truckStack.empty()) {
+			ParkingSpot p1 = truckStack.pop();
 			hashTable.put(createTruck().getLicense(), createTruck());
 			return p1;
 		}
@@ -217,6 +272,12 @@ public class ParkingLotView extends Application {
 	private Car createCar() {
 		Car c1 = new Car(ticketPane.getLicensePlateField().getText(), ticketPane.getColorField().getText());
 		return c1;
+	}
+
+	private Motorcycle createMotorCycle() {
+		Motorcycle m1 = new Motorcycle(ticketPane.getLicensePlateField().getText(),
+				ticketPane.getColorField().getText());
+		return m1;
 	}
 
 }

@@ -2,24 +2,24 @@ package model;
 
 public class Stack {
 	private int maxSize;
-	private Vehicle[] stackArray;
+	private ParkingSpot[] stackArray;
 	private int top;
 
 	public Stack(int max) {
 		maxSize = max;
-		stackArray = new Vehicle[maxSize];
+		stackArray = new ParkingSpot[maxSize];
 		top = -1;
 	}
 
-	public void push(Vehicle j) {
+	public void push(ParkingSpot j) {
 		stackArray[++top] = j;
 	}
 
-	public Vehicle pop() {
+	public ParkingSpot pop() {
 		return stackArray[top--];
 	}
 
-	public Vehicle peek() { 
+	public ParkingSpot peek() { 
 		return stackArray[top];
 	}
 
