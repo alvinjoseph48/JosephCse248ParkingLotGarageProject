@@ -22,7 +22,7 @@ public class ParkingLotView extends Application {
 
 	private TicketPane ticketPane;
 	private ExitParkingLotPane exitParkingLotPane;
-	private ParkingSpot popedCar;
+	private ParkingSpot popedVehicle;
 	private Hashtable<String, Vehicle> hashTable;
 	private double carCost = 10.0;
 	private double truckCost = 20.0;
@@ -39,9 +39,9 @@ public class ParkingLotView extends Application {
 		carStack = new Stack<ParkingSpot>();
 		motorCycleStack = new Stack<ParkingSpot>();
 		truckStack = new Stack<ParkingSpot>();
-		truckStack.setSize(10);
+		truckStack.setSize(5);
 		carStack.setSize(10);
-		motorCycleStack.setSize(10);
+		motorCycleStack.setSize(2);
 
 		ParkingSpot[] carSpots = new ParkingSpot[10];
 		ParkingSpot carSpot;
@@ -50,17 +50,16 @@ public class ParkingLotView extends Application {
 			carSpots[i] = carSpot;
 			carStack.push(carSpots[i]);
 		}
-		ParkingSpot[] truckSpots = new ParkingSpot[10];
+		ParkingSpot[] truckSpots = new ParkingSpot[5];
 		ParkingSpot truckSpot;
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 5; i++) {
 			truckSpot = new ParkingSpot(i);
 			truckSpots[i] = truckSpot;
 			truckStack.push(truckSpots[i]);
-			System.out.println(truckSpots[i].toString());
 		}
-		ParkingSpot[] motorCycleSpots = new ParkingSpot[10];
+		ParkingSpot[] motorCycleSpots = new ParkingSpot[2];
 		ParkingSpot motorCycleSpot;
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 2; i++) {
 			motorCycleSpot = new ParkingSpot(i);
 			motorCycleSpots[i] = motorCycleSpot;
 			motorCycleStack.push(motorCycleSpots[i]);
@@ -81,14 +80,17 @@ public class ParkingLotView extends Application {
 			System.exit(0);
 		});
 		ticketPane.getBuyTicketBtn().setOnAction(e -> {
-			// check if stack has spaces open to pop
+			if (!timeSelectionCheck()) {
+				mustSelectTimeAlert();
+				return;
+			}
 			if (ticketPane.getSizeList().getSelectionModel().getSelectedIndex() == 0) {
 				if (parkMotorCycle() != null) {
 					Vehicle c1 = hashTable.get(ticketPane.getLicensePlateField().getText());
 					alertParked();
 					System.out.println(c1.toString() + " " + c1.getLicense());
 					System.out.println("parked car");
-					// alert car is parked
+
 				} else {
 					alertFull();
 				}
@@ -101,7 +103,6 @@ public class ParkingLotView extends Application {
 						alertParked();
 						System.out.println(c1.toString() + " " + c1.getLicense());
 						System.out.println("parked car");
-						// alert car is parked
 					} else {
 						alertFull();
 					}
@@ -121,11 +122,8 @@ public class ParkingLotView extends Application {
 				}
 			}
 
-			// put in hashtable
-
 		});
 		exitParkingLotPane.getConfirmBtn().setOnAction(e -> {
-
 			if (removeVehicle() != null) {
 				alertRemoved();
 			} else {
@@ -140,6 +138,13 @@ public class ParkingLotView extends Application {
 
 	}
 
+	private boolean timeSelectionCheck() {
+		if (ticketPane.getTimeList().getSelectionModel().isEmpty()) {
+			return false;
+		}
+		return true;
+	}
+
 	private void alertNotFound() {
 		Alert alert = new Alert(AlertType.ERROR);
 		alert.setHeaderText("Car Was Never Parked!");
@@ -147,10 +152,31 @@ public class ParkingLotView extends Application {
 		alert.showAndWait();
 	}
 
+	private void mustSelectTimeAlert() {
+		Alert alert = new Alert(AlertType.ERROR);
+		alert.setHeaderText("Desired Time Selection");
+		alert.setContentText("Please Select Desired Time!");
+		alert.showAndWait();
+	}
+
+	private void alertParkingInTruckSpot() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setHeaderText("Only Truck Spots Available");
+		alert.setContentText("Sorry for the inconvenience but please park in a truck Spot");
+		alert.showAndWait();
+	}
+
+	private void alertParkingInCarSpot() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setHeaderText("Only Car Spots Available");
+		alert.setContentText("Sorry for the inconvenience but please park in a Car Spot");
+		alert.showAndWait();
+	}
+
 	private void alertRemoved() {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setHeaderText("Leaving Parking Lot \nThank You Come Again!");
-		alert.setContentText("License Plate:" + exitParkingLotPane.getLicensePlateField().getText());
+		alert.setContentText("License Plate: " + exitParkingLotPane.getLicensePlateField().getText());
 		alert.showAndWait();
 	}
 
@@ -164,8 +190,8 @@ public class ParkingLotView extends Application {
 	private void alertParked() {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setHeaderText("Parking ticket purchased ");
-		alert.setContentText(
-				"License Plate:" + ticketPane.getLicensePlateField().getText() + "\nCost of Ticket: " + costOfTicket());
+		alert.setContentText("License Plate: " + ticketPane.getLicensePlateField().getText() + "\nCost of Ticket: "
+				+ costOfTicket());
 		alert.showAndWait();
 	}
 
@@ -206,60 +232,62 @@ public class ParkingLotView extends Application {
 	}
 
 	private Vehicle removeVehicle() {
-		Vehicle c1 = hashTable.get(ticketPane.getLicensePlateField().getText());
+
+		Vehicle c1 = hashTable.remove(exitParkingLotPane.getLicensePlateField().getText());
 		if (c1 instanceof Car) {
-			carStack.push(popedCar);
+			carStack.push(popedVehicle);
 			return c1;
 		} else if (c1 instanceof Motorcycle) {
-			motorCycleStack.push(popedCar); // change
+			motorCycleStack.push(popedVehicle);
 			return c1;
 		} else if (c1 instanceof Truck) {
-			truckStack.push(popedCar);
+			truckStack.push(popedVehicle);
 			return c1;
 		}
 		return null;
 	}
 
 	private ParkingSpot parkCar() {
-		ParkingSpot p1 = carStack.pop();
-		if (p1 != null) {
+		popedVehicle = carStack.pop();
+		if (popedVehicle != null) {
 			hashTable.put(createCar().getLicense(), createCar());
-			return p1;
+			return popedVehicle;
 		}
-		popedCar = truckStack.pop();
-		if (popedCar != null) {
+		popedVehicle = truckStack.pop();
+		if (popedVehicle != null) {
+			alertParkingInTruckSpot();
 			hashTable.put(createCar().getLicense(), createCar());
-			return popedCar;
+			return popedVehicle;
 		} else
-
 			return null;
 	}
 
 	private ParkingSpot parkMotorCycle() {
-		if (!motorCycleStack.empty()) {
-			ParkingSpot p1 = motorCycleStack.pop();
+		popedVehicle = motorCycleStack.pop();
+		if (popedVehicle != null) {
 			hashTable.put(createMotorCycle().getLicense(), createMotorCycle());
-			return p1;
+			return popedVehicle;
 		}
-		ParkingSpot p1 = carStack.pop();
-		if (p1 != null) {
+		popedVehicle = carStack.pop();
+		if (popedVehicle != null) {
+			alertParkingInCarSpot();
 			hashTable.put(createCar().getLicense(), createCar());
-			return p1;
+			return popedVehicle;
 		}
-		popedCar = truckStack.pop();
-		if (popedCar != null) {
+		popedVehicle = truckStack.pop();
+		if (popedVehicle != null) {
+			alertParkingInTruckSpot();
 			hashTable.put(createCar().getLicense(), createCar());
-			return popedCar;
+			return popedVehicle;
 		} else
-
 			return null;
 	}
 
 	private ParkingSpot parkTruck() {
 		if (!truckStack.empty()) {
-			ParkingSpot p1 = truckStack.pop();
+			popedVehicle = truckStack.pop();
 			hashTable.put(createTruck().getLicense(), createTruck());
-			return p1;
+			return popedVehicle;
 		}
 		return null;
 	}
