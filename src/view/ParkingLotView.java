@@ -70,7 +70,6 @@ public class ParkingLotView extends Application {
 		parkingPane.getParkingMenu().setOnAction(e -> {
 			parkingPane.getBorderPane().setCenter(exitParkingLotPane.getExitPane());
 			exitParkingLotPane.clear();
-
 		});
 		parkingPane.getBuyTicket().setOnAction(e -> {
 			parkingPane.getBorderPane().setCenter(ticketPane.getTicketPane());
@@ -86,23 +85,15 @@ public class ParkingLotView extends Application {
 			}
 			if (ticketPane.getSizeList().getSelectionModel().getSelectedIndex() == 0) {
 				if (parkMotorCycle() != null) {
-					Vehicle c1 = hashTable.get(ticketPane.getLicensePlateField().getText());
 					alertParked();
-					System.out.println(c1.toString() + " " + c1.getLicense());
-					System.out.println("parked car");
-
 				} else {
 					alertFull();
 				}
-
 			}
 			if (ticketPane.getSizeList().getSelectionModel().getSelectedIndex() == 1) {
 				try {
 					if (parkCar() != null) {
-						Vehicle c1 = hashTable.get(ticketPane.getLicensePlateField().getText());
 						alertParked();
-						System.out.println(c1.toString() + " " + c1.getLicense());
-						System.out.println("parked car");
 					} else {
 						alertFull();
 					}
@@ -112,11 +103,7 @@ public class ParkingLotView extends Application {
 			}
 			if (ticketPane.getSizeList().getSelectionModel().getSelectedIndex() == 2) {
 				if (parkTruck() != null) {
-					Vehicle c1 = hashTable.get(ticketPane.getLicensePlateField().getText());
 					alertParked();
-					System.out.println(c1.toString() + " " + c1.getLicense());
-					System.out.println("parked car");
-
 				} else {
 					alertFull();
 				}
@@ -131,7 +118,6 @@ public class ParkingLotView extends Application {
 			}
 
 		});
-
 		Scene myScene = new Scene(parkingPane.getBorderPane(), 500, 500);
 		primaryStage.setScene(myScene);
 		primaryStage.show();
@@ -190,7 +176,7 @@ public class ParkingLotView extends Application {
 	private void alertParked() {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setHeaderText("Parking ticket purchased ");
-		alert.setContentText("License Plate: " + ticketPane.getLicensePlateField().getText() + "\nCost of Ticket: "
+		alert.setContentText("License Plate: " + ticketPane.getLicensePlateField().getText() + "\nCost of Ticket: $"
 				+ costOfTicket());
 		alert.showAndWait();
 	}
@@ -291,7 +277,6 @@ public class ParkingLotView extends Application {
 		}
 		return null;
 	}
-
 	private Truck createTruck() {
 		Truck t1 = new Truck(ticketPane.getLicensePlateField().getText(), ticketPane.getColorField().getText());
 		return t1;

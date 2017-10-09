@@ -6,9 +6,4 @@ public class Truck extends Vehicle {
 		super(license, color);
 	}
 
-	private final String size = "Large";
-
-	public String getSize() {
-		return size;
-	}
 }
